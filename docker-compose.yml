@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  mongodb:
+    image: mongo:7.0
+    container_name: premium-wood-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: premium-wood-brand
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - premium-wood-network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: premium-wood-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongodb:27017/premium-wood-brand
+      - JWT_SECRET=your_super_secret_jwt_key_change_this_in_production_12345
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/uploads:/app/uploads
+    networks:
+      - premium-wood-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: premium-wood-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - premium-wood-network
+    stdin_open: true
+    tty: true
+
+# Networks
+networks:
+  premium-wood-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  mongodb-data:
+    driver: local
