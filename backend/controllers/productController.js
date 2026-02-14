@@ -34,7 +34,12 @@ exports.getProductById = async (req, res) => {
 // Create product
 exports.createProduct = async (req, res) => {
   try {
-    const images = req.files ? req.files.map(file => `/uploads/products/${file.filename}`) : [];
+    // Handle both local and Cloudinary paths
+    const images = req.files ? req.files.map(file => {
+      // Cloudinary returns file.path as full URL
+      // Local returns file.filename, need to construct path
+      return file.path || `/uploads/products/${file.filename}`;
+    }) : [];
     
     const product = new Product({
       ...req.body,
@@ -63,14 +68,18 @@ exports.updateProduct = async (req, res) => {
 
     let images = product.images;
     if (req.files && req.files.length > 0) {
-      // Delete old images
+      // Delete old images only if they're local (not Cloudinary URLs)
       product.images.forEach(img => {
-        const imagePath = path.join(__dirname, '..', img);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
+        if (img.startsWith('/uploads/')) {
+          const imagePath = path.join(__dirname, '..', img);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          }
         }
+        // Cloudinary images - you'd need to delete from Cloudinary API if needed
       });
-      images = req.files.map(file => `/uploads/products/${file.filename}`);
+      
+      images = req.files.map(file => file.path || `/uploads/products/${file.filename}`);
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(

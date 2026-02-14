@@ -52,7 +52,7 @@ exports.getBlogBySlug = async (req, res) => {
 // Create blog
 exports.createBlog = async (req, res) => {
   try {
-    const featured_image = req.file ? `/uploads/blogs/${req.file.filename}` : '';
+    const featured_image = req.file ? (req.file.path || `/uploads/blogs/${req.file.filename}`) : '';
     
     const blog = new Blog({
       ...req.body,
@@ -77,12 +77,14 @@ exports.updateBlog = async (req, res) => {
 
     let featured_image = blog.featured_image;
     if (req.file) {
-      // Delete old image
-      const imagePath = path.join(__dirname, '..', blog.featured_image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+      // Delete old image only if it's local
+      if (blog.featured_image.startsWith('/uploads/')) {
+        const imagePath = path.join(__dirname, '..', blog.featured_image);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
       }
-      featured_image = `/uploads/blogs/${req.file.filename}`;
+      featured_image = req.file.path || `/uploads/blogs/${req.file.filename}`;
     }
 
     const updatedBlog = await Blog.findByIdAndUpdate(
