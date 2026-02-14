@@ -105,24 +105,40 @@ a:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .navbar-brand {
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--gold);
+  z-index: 1001;
+}
+
+.navbar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
 }
 
 .navbar-menu {
   display: flex;
   list-style: none;
   gap: 2rem;
+  margin: 0;
+  padding: 0;
 }
 
 .navbar-menu a {
   color: var(--text-light);
   font-weight: 500;
   padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
 }
 
 .navbar-menu a:hover {
@@ -350,9 +366,43 @@ select.form-control {
     grid-template-columns: 1fr;
   }
 
+  /* Mobile Navbar */
+  .navbar-toggle {
+    display: block !important;
+  }
+
   .navbar-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    height: 100vh;
+    width: 70%;
+    max-width: 300px;
+    background: var(--secondary-dark);
     flex-direction: column;
-    gap: 1rem;
+    padding: 80px 0 20px 0;
+    gap: 0;
+    transition: right 0.3s ease;
+    box-shadow: -2px 0 10px var(--shadow);
+  }
+
+  .navbar-menu.active {
+    right: 0;
+  }
+
+  .navbar-menu li {
+    width: 100%;
+  }
+
+  .navbar-menu a {
+    display: block;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--wood-brown);
+    width: 100%;
+  }
+
+  .navbar-menu a:hover {
+    background: var(--wood-brown);
   }
 
   .hero h1 {
@@ -361,6 +411,10 @@ select.form-control {
 
   .footer-content {
     grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
