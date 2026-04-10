@@ -1,0 +1,14 @@
+{
+  "name": "parkticket",
+  "version": "1.0.0",
+  "description": "Parking Ticket Management System — monorepo root",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "build": "cd frontend && npm install && npm run build",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "seed": "cd backend && node config/seed.js"
+  }
+}
