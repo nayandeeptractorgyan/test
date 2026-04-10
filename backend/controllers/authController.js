@@ -1,80 +1,74 @@
-const Admin = require('../models/Admin');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-// Register Admin (First time setup)
-exports.registerAdmin = async (req, res) => {
-  try {
-    const { email, password, name } = req.body;
-
-    // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email });
-    if (existingAdmin) {
-      return res.status(400).json({ message: 'Admin already exists' });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create admin
-    const admin = new Admin({
-      email,
-      password: hashedPassword,
-      name
-    });
-
-    await admin.save();
-
-    res.status(201).json({ message: 'Admin registered successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '24h'
+  });
 };
 
-// Login Admin
-exports.loginAdmin = async (req, res) => {
+exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    // Check if admin exists
-    const admin = await Admin.findOne({ email });
-    if (!admin) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
-    // Verify password
-    const isMatch = await bcrypt.compare(password, admin.password);
+    const bcrypt = require('bcryptjs');
+    const user = await User.findOne({ username: username.toLowerCase() });
+    if (!user || !user.isActive) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Create token
-    const token = jwt.sign(
-      { id: admin._id, email: admin.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = generateToken(user._id);
 
     res.json({
+      success: true,
       token,
-      admin: {
-        id: admin._id,
-        email: admin.email,
-        name: admin.name
+      user: {
+        id: user._id,
+        username: user.username,
+        name: user.name,
+        role: user.role
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-// Get Admin Profile
-exports.getAdminProfile = async (req, res) => {
+exports.getMe = async (req, res) => {
+  res.json({
+    success: true,
+    user: req.user
+  });
+};
+
+exports.changePassword = async (req, res) => {
   try {
-    const admin = await Admin.findById(req.admin.id).select('-password');
-    res.json(admin);
+    const { currentPassword, newPassword } = req.body;
+    const bcrypt = require('bcryptjs');
+
+    const user = await User.findById(req.user._id);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ success: true, message: 'Password changed successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── Core palette from reference image ── */
+  --bg:       #F2EDE4;
+  --bg2:      #FEFCF8;
+  --bg3:      #EDE8DE;
+  --border:   #DDD8CE;
+
+  /* Text */
+  --text:     #1A1A2A;
+  --text2:    #5A5870;
+  --text3:    #9996AC;
+
+  /* Accents */
+  --green:    #4CAF6E;
+  --green-lt: #D4F0DD;
+  --purple:   #7C5CBF;
+  --purple-lt:#EDE8F8;
+  --cyan:     #4ECDC4;
+  --cyan-lt:  #D0F5F3;
+  --yellow:   #F4C842;
+  --yellow-lt:#FEF5D0;
+  --red:      #E05C5C;
+  --red-lt:   #FCE0E0;
+  --blue:     #4A90D9;
+  --blue-lt:  #D8ECFB;
+
+  /* Alias for compatibility */
+  --accent:   #7C5CBF;
+
+  --radius:    14px;
+  --radius-sm: 10px;
+  --shadow:    0 4px 20px rgba(0,0,0,0.08);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.10);
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg3); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Loading */
+.loading-screen { display:flex; align-items:center; justify-content:center; height:100vh; font-size:1.2rem; color:var(--text2); }
+
+/* Form elements */
+input, select, textarea {
+  font-family: inherit;
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px var(--purple-lt);
+}
+input::placeholder { color: var(--text3); }
+
+label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-group { margin-bottom: 16px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  border: none; cursor: pointer;
+  font-family: inherit; font-size: 0.9rem; font-weight: 700;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--purple); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #6A4AAF; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,92,191,0.3); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-success:hover:not(:disabled) { background: #3A9E5E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(76,175,110,0.3); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #C94C4C; }
+.btn-ghost { background: transparent; color: var(--text2); border: 1.5px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg3); color: var(--text); border-color: var(--text3); }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+.btn-lg { padding: 14px 28px; font-size: 1rem; }
+
+/* Cards */
+.card {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* Table */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1.5px solid var(--border); box-shadow: var(--shadow); }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+thead { background: var(--bg3); }
+th {
+  padding: 12px 16px; text-align: left;
+  font-size: 0.75rem; font-weight: 800; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  border-bottom: 1.5px solid var(--border);
+}
+td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--bg); }
+
+/* Badge */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 800;
+}
+.badge-green  { background: var(--green-lt);  color: #2D8A4E; }
+.badge-red    { background: var(--red-lt);    color: var(--red); }
+.badge-blue   { background: var(--blue-lt);   color: var(--blue); }
+.badge-yellow { background: var(--yellow-lt); color: #A07A00; }
+.badge-purple { background: var(--purple-lt); color: var(--purple); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,26,42,0.4);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.modal {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  width: 100%; max-width: 480px;
+  box-shadow: var(--shadow-md);
+  animation: modalIn 0.22s ease;
+}
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+.modal-title  { font-size:1.15rem; font-weight:800; color: var(--text); }
+.modal-close  { background:none; border:none; color:var(--text3); cursor:pointer; font-size:1.5rem; line-height:1; padding:4px; border-radius:8px; transition:color 0.15s, background 0.15s; }
+.modal-close:hover { color:var(--text); background:var(--bg3); }
+.modal-footer { display:flex; gap:12px; justify-content:flex-end; margin-top:24px; }
+
+/* Animations */
+@keyframes modalIn {
+  from { opacity:0; transform:scale(0.95) translateY(-10px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+@keyframes bounce {
+  0%,100% { transform: translateX(0); }
+  50%      { transform: translateX(-8px); }
+}
+@keyframes pulse {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.4; }
+}
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Print */
+@media print {
+  body > * { display: none !important; }
+  #print-slip { display: flex !important; position: fixed; inset: 0; align-items: center; justify-content: center; background: white; }
+}

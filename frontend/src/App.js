@@ -1,132 +1,66 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import PrivateRoute from './utils/PrivateRoute';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-// Public Components
-import Navbar from './components/public/Navbar';
-import Footer from './components/public/Footer';
-import WhatsAppButton from './components/public/WhatsAppButton';
-
-// Public Pages
-import Home from './pages/public/Home';
-import Products from './pages/public/Products';
-import ProductDetail from './pages/public/ProductDetail';
-import CustomOrder from './pages/public/CustomOrder';
-import Reviews from './pages/public/Reviews';
-import Blog from './pages/public/Blog';
-import BlogDetail from './pages/public/BlogDetail';
-import About from './pages/public/About';
-import Contact from './pages/public/Contact';
-
-// Admin Pages
-import AdminLogin from './pages/admin/AdminLogin';
+import LoginPage from './pages/LoginPage';
+import OperatorPanel from './pages/OperatorPanel';
+import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminProducts from './pages/admin/AdminProducts';
-import AddProduct from './pages/admin/AddProduct';
-import EditProduct from './pages/admin/EditProduct';
-import AdminOrders from './pages/admin/AdminOrders';
-import AdminLeads from './pages/admin/AdminLeads';
-import AdminReviews from './pages/admin/AdminReviews';
-import AdminBlog from './pages/admin/AdminBlog';
-import AddBlog from './pages/admin/AddBlog';
+import UsersPage from './pages/admin/UsersPage';
+import TicketClassesPage from './pages/admin/TicketClassesPage';
+import ReportsPage from './pages/admin/ReportsPage';
+import LiveMonitorPage from './pages/admin/LiveMonitorPage';
 
-import './App.css';
+const PrivateRoute = ({ children, role }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="loading-screen">Loading…</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (role && user.role !== role) return <Navigate to="/" replace />;
+  return children;
+};
 
-function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={
-            <>
-              <Navbar />
-              <Home />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/products" element={
-            <>
-              <Navbar />
-              <Products />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/products/:id" element={
-            <>
-              <Navbar />
-              <ProductDetail />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/custom-order" element={
-            <>
-              <Navbar />
-              <CustomOrder />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/reviews" element={
-            <>
-              <Navbar />
-              <Reviews />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/blog" element={
-            <>
-              <Navbar />
-              <Blog />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/blog/:slug" element={
-            <>
-              <Navbar />
-              <BlogDetail />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/about" element={
-            <>
-              <Navbar />
-              <About />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
-          <Route path="/contact" element={
-            <>
-              <Navbar />
-              <Contact />
-              <Footer />
-              <WhatsAppButton />
-            </>
-          } />
+const RootRedirect = () => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  return <Navigate to={user.role === 'superadmin' ? '/admin' : '/operator'} replace />;
+};
 
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-          <Route path="/admin/products" element={<PrivateRoute><AdminProducts /></PrivateRoute>} />
-          <Route path="/admin/add-product" element={<PrivateRoute><AddProduct /></PrivateRoute>} />
-          <Route path="/admin/edit-product/:id" element={<PrivateRoute><EditProduct /></PrivateRoute>} />
-          <Route path="/admin/orders" element={<PrivateRoute><AdminOrders /></PrivateRoute>} />
-          <Route path="/admin/leads" element={<PrivateRoute><AdminLeads /></PrivateRoute>} />
-          <Route path="/admin/reviews" element={<PrivateRoute><AdminReviews /></PrivateRoute>} />
-          <Route path="/admin/blog" element={<PrivateRoute><AdminBlog /></PrivateRoute>} />
-          <Route path="/admin/add-blog" element={<PrivateRoute><AddBlog /></PrivateRoute>} />
-        </Routes>
-      </Router>
-    </AuthProvider>
-  );
-}
+const App = () => (
+  <AuthProvider>
+    <BrowserRouter>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#FEFCF8',
+            color: '#1A1A2A',
+            border: '1.5px solid #DDD8CE',
+            borderRadius: '14px',
+            fontFamily: "'Nunito', sans-serif",
+            fontWeight: 700,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+          },
+          success: { iconTheme: { primary: '#4CAF6E', secondary: '#fff' } },
+          error:   { iconTheme: { primary: '#E05C5C', secondary: '#fff' } },
+        }}
+      />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<RootRedirect />} />
+        <Route path="/operator" element={<PrivateRoute role="operator"><OperatorPanel /></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute role="superadmin"><AdminLayout /></PrivateRoute>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="ticket-classes" element={<TicketClassesPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="monitor" element={<LiveMonitorPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  </AuthProvider>
+);
 
 export default App;

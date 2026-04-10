@@ -1,19 +1,43 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-const auth = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return res.status(401).json({ message: 'No authentication token, access denied' });
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
     }
 
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.admin = verified;
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user || !user.isActive) {
+      return res.status(401).json({ success: false, message: 'User not found or inactive' });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Token verification failed, authorization denied' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ success: false, message: 'Token expired' });
+    }
+    return res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
 
-module.exports = auth;
+const requireSuperadmin = (req, res, next) => {
+  if (req.user.role !== 'superadmin') {
+    return res.status(403).json({ success: false, message: 'Superadmin access required' });
+  }
+  next();
+};
+
+const requireOperator = (req, res, next) => {
+  if (!['superadmin', 'operator'].includes(req.user.role)) {
+    return res.status(403).json({ success: false, message: 'Operator access required' });
+  }
+  next();
+};
+
+module.exports = { authenticate, requireSuperadmin, requireOperator };
